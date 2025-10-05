@@ -1,0 +1,302 @@
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Lighting = game:GetService("Lighting")
+
+local Window = WindUI:CreateWindow({
+    Folder = "Ringta Scripts",
+    Title = "RINGTA SCRIPTS",
+    Icon = "star",
+    Author = "RINGTA and BUBLIK6241",
+    Theme = "Dark",
+    Size = UDim2.fromOffset(500, 350),
+    HasOutline = true,
+})
+
+Window:EditOpenButton({
+    Title = "Open RINGTA SCRIPTS",
+    Icon = "pointer",
+    CornerRadius = UDim.new(0, 6),
+    StrokeThickness = 2,
+    Color = ColorSequence.new(Color3.fromRGB(200, 0, 255), Color3.fromRGB(0, 200, 255)),
+    Draggable = true,
+})
+
+local Tabs = {
+    Main = Window:Tab({ Title = "Main", Icon = "star" }),
+    Teleport = Window:Tab({ Title = "Teleport", Icon = "rocket" }),
+    Bring = Window:Tab({ Title = "Bring Items", Icon = "package" }),
+    Hitbox = Window:Tab({ Title = "Hitbox", Icon = "target" }),
+    KillAll = Window:Tab({ Title = "Combat", Icon = "skull" }),
+    Misc = Window:Tab({ Title = "Misc", Icon = "gift" }),
+    Esp = Window:Tab({ Title = "Esp", Icon = "eye" }),
+    Credits = Window:Tab({ Title = "Credits", Icon = "award" })
+}
+
+local originalParents = {
+    Sky = nil,
+    Bloom = nil,
+    CampfireEffect = nil
+}
+
+local function storeOriginalParents()
+    local sky = Lighting:FindFirstChild("Sky")
+    local bloom = Lighting:FindFirstChild("Bloom")
+    local campfireEffect = Lighting:FindFirstChild("CampfireEffect")
+    
+    if sky and not originalParents.Sky then
+        originalParents.Sky = sky.Parent
+    end
+    if bloom and not originalParents.Bloom then
+        originalParents.Bloom = bloom.Parent
+    end
+    if campfireEffect and not originalParents.CampfireEffect then
+        originalParents.CampfireEffect = campfireEffect.Parent
+    end
+end
+
+storeOriginalParents()
+
+local originalColorCorrectionParent = nil
+
+local function storeColorCorrectionParent()
+    local colorCorrection = Lighting:FindFirstChild("ColorCorrection")
+    
+    if colorCorrection and not originalColorCorrectionParent then
+        originalColorCorrectionParent = colorCorrection.Parent
+    end
+end
+
+storeColorCorrectionParent()
+
+Tabs.Misc:Toggle({
+    Title = "Disable Fog",
+    Desc = "",
+    Value = false,
+    Callback = function(state)
+        if state then
+            local sky = Lighting:FindFirstChild("Sky")
+            local bloom = Lighting:FindFirstChild("Bloom")
+            local campfireEffect = Lighting:FindFirstChild("CampfireEffect")
+            
+            if sky then
+                sky.Parent = nil
+            end
+            if bloom then
+                bloom.Parent = nil
+            end
+            if campfireEffect then
+                campfireEffect.Parent = nil
+            end
+        else
+            local sky = game:FindFirstChild("Sky", true)
+            local bloom = game:FindFirstChild("Bloom", true) 
+            local campfireEffect = game:FindFirstChild("CampfireEffect", true)
+            
+            if not sky then sky = Lighting:FindFirstChild("Sky") end
+            if not bloom then bloom = Lighting:FindFirstChild("Bloom") end
+            if not campfireEffect then campfireEffect = Lighting:FindFirstChild("CampfireEffect") end
+            
+            if sky then
+                sky.Parent = originalParents.Sky or Lighting
+            end
+            if bloom then
+                bloom.Parent = originalParents.Bloom or Lighting
+            end
+            if campfireEffect then
+                campfireEffect.Parent = originalParents.CampfireEffect or Lighting
+            end
+        end
+    end
+})
+
+local originalLightingValues = {
+    Brightness = nil,
+    Ambient = nil,
+    OutdoorAmbient = nil,
+    ShadowSoftness = nil,
+    GlobalShadows = nil,
+    Technology = nil
+}
+
+local function storeOriginalLighting()
+    if not originalLightingValues.Brightness then
+        originalLightingValues.Brightness = Lighting.Brightness
+        originalLightingValues.Ambient = Lighting.Ambient
+        originalLightingValues.OutdoorAmbient = Lighting.OutdoorAmbient
+        originalLightingValues.ShadowSoftness = Lighting.ShadowSoftness
+        originalLightingValues.GlobalShadows = Lighting.GlobalShadows
+        originalLightingValues.Technology = Lighting.Technology
+    end
+end
+
+storeOriginalLighting()
+
+Tabs.Misc:Toggle({
+    Title = "Disable NightCampFire Effect",
+    Desc = "",
+    Value = false,
+    Callback = function(state)
+        if state then
+            local colorCorrection = Lighting:FindFirstChild("ColorCorrection")
+            
+            if colorCorrection then
+                if not originalColorCorrectionParent then
+                    originalColorCorrectionParent = colorCorrection.Parent
+                end
+                colorCorrection.Parent = nil
+            end
+        else
+            local colorCorrection = nil
+            
+            colorCorrection = Lighting:FindFirstChild("ColorCorrection")
+            
+            if not colorCorrection then
+                colorCorrection = game:FindFirstChild("ColorCorrection", true)
+            end
+            
+            if colorCorrection then
+                colorCorrection.Parent = Lighting
+            end
+        end
+    end
+})
+
+Tabs.Misc:Toggle({
+    Title = "Full Bright",
+    Desc = "",
+    Value = false,
+    Callback = function(state)
+        if state then
+            Lighting.ClockTime = 14
+            Lighting.Brightness = 2.2
+            Lighting.Ambient = Color3.new(1, 1, 1)
+            Lighting.OutdoorAmbient = Color3.new(1, 1, 1)
+            Lighting.ShadowSoftness = 0
+            Lighting.GlobalShadows = false
+            Lighting.Technology = Enum.Technology.Compatibility
+        else
+            Lighting.Brightness = originalLightingValues.Brightness
+            Lighting.Ambient = originalLightingValues.Ambient
+            Lighting.OutdoorAmbient = originalLightingValues.OutdoorAmbient
+            Lighting.ShadowSoftness = originalLightingValues.ShadowSoftness
+            Lighting.GlobalShadows = originalLightingValues.GlobalShadows
+            Lighting.Technology = originalLightingValues.Technology
+        end
+    end
+})
+
+Tabs.Misc:Button({
+    Title = "FPS Boost",
+    Callback = function()
+        pcall(function()
+            settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+            Lighting.Brightness = 1
+            Lighting.FogEnd = 1000000
+            Lighting.GlobalShadows = false
+            Lighting.EnvironmentDiffuseScale = 0
+            Lighting.EnvironmentSpecularScale = 0
+            Lighting.ClockTime = 14
+            Lighting.OutdoorAmbient = Color3.new(0, 0, 0)
+            local terrain = workspace:FindFirstChildOfClass("Terrain")
+            if terrain then
+                terrain.WaterWaveSize = 0
+                terrain.WaterWaveSpeed = 0
+                terrain.WaterReflectance = 0
+                terrain.WaterTransparency = 1
+            end
+            for _, obj in ipairs(Lighting:GetDescendants()) do
+                if obj:IsA("PostEffect") or obj:IsA("BloomEffect") or obj:IsA("ColorCorrectionEffect") or obj:IsA("SunRaysEffect") or obj:IsA("BlurEffect") then
+                    obj.Enabled = false
+                end
+            end
+            for _, obj in ipairs(game:GetDescendants()) do
+                if obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
+                    obj.Enabled = false
+                elseif obj:IsA("Texture") or obj:IsA("Decal") then
+                    obj.Transparency = 1
+                end
+            end
+            for _, part in ipairs(workspace:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CastShadow = false
+                end
+            end
+        end)
+        print("FPS Boost Applied")
+    end
+})
+
+local speedConnection = nil
+local currentSpeed = 16
+
+Tabs.Misc:Slider({
+    Title = "Speed Enhancer",
+    Step = 1,
+    Value = {
+        Min = 16,
+        Max = 200,
+        Default = 16,
+    },
+    Callback = function(value)
+        currentSpeed = value
+        
+        if speedConnection then
+            speedConnection:Disconnect()
+        end
+        
+        local character = LocalPlayer.Character
+        if character then
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = value
+            end
+        end
+        
+        speedConnection = LocalPlayer.CharacterAdded:Connect(function(char)
+            local hum = char:WaitForChild("Humanoid")
+            if hum then
+                hum.WalkSpeed = currentSpeed
+            end
+        end)
+    end
+})
+
+local jumpConnection = nil
+local currentJumpPower = 50
+
+Tabs.Misc:Slider({
+    Title = "Jump Power Enhancer",
+    Step = 1,
+    Value = {
+        Min = 50,
+        Max = 300,
+        Default = 50,
+    },
+    Callback = function(value)
+        currentJumpPower = value
+        
+        if jumpConnection then
+            jumpConnection:Disconnect()
+        end
+        
+        local character = LocalPlayer.Character
+        if character then
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.JumpPower = value
+            end
+        end
+        
+        jumpConnection = LocalPlayer.CharacterAdded:Connect(function(char)
+            local hum = char:WaitForChild("Humanoid")
+            if hum then
+                hum.JumpPower = currentJumpPower
+            end
+        end)
+    end
+})
